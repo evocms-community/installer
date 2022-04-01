@@ -36,7 +36,7 @@ class Installer{
         ],
         '1.4.18' => [
             'tree' => 'Evolution',
-            'name' => 'Evolution CMS 1.4.16',
+            'name' => 'Evolution CMS 1.4.18',
             'link' => 'https://github.com/evocms-community/evolution/archive/1.4.18.zip',
             'location' =>'install/index.php'
         ],
