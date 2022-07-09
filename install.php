@@ -6,7 +6,7 @@ set_time_limit(0);
 ini_set('max_execution_time',0);
 
 $installer_version = '1';
-$default = '3.1.11';
+$default = '3.1.12';
 
 if(extension_loaded('xdebug')) {
     ini_set('xdebug.max_nesting_level', 100000);
@@ -22,28 +22,28 @@ header('Content-Type: text/html; charset=utf-8');
 
 class Installer{
     public static $packageInfo = [
-        '3.1.11' => [
+        '3.1.12' => [
             'tree' => 'Evolution',
-            'name' => 'Evolution CMS 3.1.11',
-            'link' => 'https://github.com/evocms-community/evolution/archive/3.1.11.zip',
+            'name' => 'Evolution CMS 3.1.12',
+            'link' => 'https://github.com/evocms-community/evolution/archive/refs/tags/3.1.12.zip',
             'location' => 'install/index.php'
         ],
         '3.x' => [
             'tree' => 'Evolution',
             'name' => 'Evolution CMS 3 (3.x develop version)',
-            'link' => 'https://github.com/evocms-community/evolution/archive/3.x.zip',
+            'link' => 'https://github.com/evocms-community/evolution/archive/refs/heads/3.x.zip',
             'location' => 'install/index.php'
         ],
-        '1.4.18' => [
+        '1.4.20' => [
             'tree' => 'Evolution',
-            'name' => 'Evolution CMS 1.4.18',
-            'link' => 'https://github.com/evocms-community/evolution/archive/1.4.18.zip',
+            'name' => 'Evolution CMS 1.4.20',
+            'link' => 'https://github.com/evocms-community/evolution/archive/refs/tags/1.4.20.zip',
             'location' =>'install/index.php'
         ],
         '1.4.x' => [
             'tree' => 'Evolution',
             'name' => 'Evolution CMS (1.4.x develop version)',
-            'link' => 'https://github.com/evocms-community/evolution/archive/1.4.x.zip',
+            'link' => 'https://github.com/evocms-community/evolution/archive/refs/heads/1.4.x.zip',
             'location' => 'install/index.php'
         ]
     ];
