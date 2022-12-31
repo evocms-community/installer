@@ -278,7 +278,7 @@ class Installer{
 </div>
 <div class="content">
     <h2>Choose Evolution CMS version for install:</h2>
-    <form>';
+    <form>
         <?= Installer::items($default) ?>
         <?= Installer::hasProblem() ?: '<br><button>Install &rarr;</button>' ?>
     </form>
