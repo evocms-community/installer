@@ -24,8 +24,8 @@ class Installer
     public static $packageInfo = [
         '3.1.13-RC' => [
             'tree'     => 'Evolution',
-            'name'     => 'Evolution CMS Community Edition 3.1.13-RC',
-            'link'     => 'https://github.com/evocms-community/evolution/archive/refs/tags/3.1.13-RC.zip',
+            'name'     => 'Evolution CMS Community Edition 3.1.13-RC2',
+            'link'     => 'https://github.com/evocms-community/evolution/archive/refs/tags/3.1.13-RC2.zip',
             'location' => 'install/index.php'
         ],
         '3.1.12' => [
