@@ -40,10 +40,10 @@ class Installer
             'link'     => 'https://github.com/evocms-community/evolution/archive/refs/heads/3.x.zip',
             'location' => 'install/index.php'
         ],
-        '1.4.21' => [
+        '1.4.22' => [
             'tree'     => 'Evolution',
-            'name'     => 'Evolution CMS Community Edition 1.4.21',
-            'link'     => 'https://github.com/evocms-community/evolution/archive/refs/tags/1.4.21.zip',
+            'name'     => 'Evolution CMS Community Edition 1.4.22',
+            'link'     => 'https://github.com/evocms-community/evolution/archive/refs/tags/1.4.22.zip',
             'location' => 'install/index.php'
         ],
         '1.4.x'  => [
