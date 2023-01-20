@@ -5,7 +5,7 @@ set_time_limit(0);
 ini_set('max_execution_time', 0);
 
 $installer_version = '1';
-$default = '3.1.13-RC';
+$default = '3.1.13';
 
 if (extension_loaded('xdebug')) {
     ini_set('xdebug.max_nesting_level', 100000);
@@ -22,10 +22,10 @@ header('Content-Type: text/html; charset=utf-8');
 class Installer
 {
     public static $packageInfo = [
-        '3.1.13-RC' => [
+        '3.1.13' => [
             'tree'     => 'Evolution',
-            'name'     => 'Evolution CMS Community Edition 3.1.13-RC2',
-            'link'     => 'https://github.com/evocms-community/evolution/archive/refs/tags/3.1.13-RC2.zip',
+            'name'     => 'Evolution CMS Community Edition 3.1.13',
+            'link'     => 'https://github.com/evocms-community/evolution/archive/refs/tags/3.1.13.zip',
             'location' => 'install/index.php'
         ],
         '3.1.12' => [
