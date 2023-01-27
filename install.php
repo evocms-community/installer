@@ -36,7 +36,7 @@ class Installer
         ],
         '3.x'    => [
             'tree'     => 'Evolution',
-            'name'     => 'Evolution CMS Community Edition3 (3.x develop version)',
+            'name'     => 'Evolution CMS Community Edition (3.x develop version)',
             'link'     => 'https://github.com/evocms-community/evolution/archive/refs/heads/3.x.zip',
             'location' => 'install/index.php'
         ],
