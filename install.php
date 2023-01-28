@@ -32,13 +32,13 @@ class Installer
     {
         $errors = [];
 
+        if (!extension_loaded('zip')) {
+            $errors[] = '<div class="error">Cannot extract archives - ZIP extension is not enabled on this server.</div>';
+        }
+
         if (!extension_loaded('curl')) {
             $errors[] =
                 '<div class="error">Cannot download files - CURL extension is not enabled on this server.</div>';
-        }
-        
-        if (!extension_loaded('zip')) {
-            $errors[] = '<div class="error">Cannot extract archives - ZIP extension is not enabled on this server.</div>';
         }
 
         if (!is_writable(__DIR__)) {
@@ -164,7 +164,7 @@ class Installer
             return;
         }
 
-        throw new \RuntimeException(
+        throw new RuntimeException(
             sprintf(
                 'Directory "%s" was not created',
                 $folder
@@ -221,6 +221,7 @@ class Installer
             justify-content: center;
             margin: 0;
             padding: 0;
+            min-width: 320px;
             background: #f1f1f1;
             color: #444;
             font-size: 1rem;
@@ -239,7 +240,7 @@ class Installer
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 0 3rem;
+            padding: 0 0 2rem;
             font-size: calc(3rem + 1vw);
         }
         .header-title {
@@ -459,6 +460,7 @@ class Installer
       const data = []
       const branches = await fetch(this.apiUrl + 'branches').then(r => r.json())
       const ignore = ['3.2.x', '2.0.x']
+
       for (const branch of branches) {
         if (ignore.includes(branch.name)) {
           continue
