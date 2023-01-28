@@ -33,7 +33,8 @@ class Installer
         $errors = [];
 
         if (!extension_loaded('curl')) {
-            $errors[] = '<div class="error">Cannot download files - CURL extension is not enabled on this server.</div>';
+            $errors[] =
+                '<div class="error">Cannot download files - CURL extension is not enabled on this server.</div>';
         }
         
         if (!extension_loaded('zip')) {
@@ -82,11 +83,12 @@ class Installer
     {
         $url = sprintf($this->zipUrl, $tag);
 
-        $zipName = 'fetch.zip';
+        $tempName = '_temp' . md5(time());
+        $zipName = $tempName . '.zip';
         $baseDir = str_replace('\\', '/', __DIR__);
-        $tempDir = str_replace('\\', '/', __DIR__) . '/_temp' . md5(time());
+        $tempDir = str_replace('\\', '/', __DIR__) . '/' . $tempName;
 
-        file_put_contents('fetch.zip', $this->curl($url));
+        file_put_contents($zipName, $this->curl($url));
 
         $zip = new ZipArchive();
         $zip->open($baseDir . '/' . $zipName);
@@ -456,9 +458,12 @@ class Installer
     async getBranches () {
       const data = []
       const branches = await fetch(this.apiUrl + 'branches').then(r => r.json())
-      const ignore = ['3.2.x', '2.0.x'];
+      const ignore = ['3.2.x', '2.0.x']
       for (const branch of branches) {
-        if(ignore.includes(branch.name)) continue;
+        if (ignore.includes(branch.name)) {
+          continue
+        }
+
         data.push({
           tag: branch.name,
           name: branch.name
