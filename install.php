@@ -23,17 +23,7 @@ class Installer
     /**
      * @var string
      */
-    protected $dataUrl = 'https://api.github.com/repos/evocms-community/evolution/releases';
-
-    /**
-     * @var array
-     */
-    public $data = [];
-
-    public function __construct()
-    {
-        $this->getReleases();
-    }
+    protected $zipUrl = 'https://github.com/evocms-community/evolution/archive/refs/%s.zip';
 
     /**
      * @return string
@@ -43,45 +33,15 @@ class Installer
         $errors = [];
 
         if (!extension_loaded('curl')) {
-            $errors[] = '<h2 class="warning">Cannot download the files - CURL is not enabled on this server.</h2>';
+            $errors[] = '<div class="error">Cannot download the files - CURL is not enabled on this server.</div>';
         }
 
         if (!is_writable(__DIR__)) {
             $errors[] =
-                '<h2 class="warning">Cannot download the files - The directory does not have write permission.</h2>';
+                '<div class="error">Cannot download the files - The directory does not have write permission.</div>';
         }
 
-        return implode('<br>', $errors);
-    }
-
-    /**
-     * @return array
-     */
-    protected function getReleases()
-    {
-        $json = 'install.json';
-
-        if (is_file($json)) {
-            return $this->data = json_decode(file_get_contents($json), true);
-        }
-
-        $result = json_decode($this->curl($this->dataUrl), true);
-
-        foreach ($result as $item) {
-            $this->data[$item['tag_name']] = [
-                'tag' => $item['tag_name'],
-                'name' => $item['name'],
-                'url' => $item['html_url'],
-                'zip' => $item['zipball_url'],
-                'tar' => $item['tarball_url'],
-            ];
-        }
-
-        krsort($this->data);
-
-        file_put_contents('install.json', json_encode($this->data));
-
-        return $this->data;
+        return implode($errors);
     }
 
     /**
@@ -109,29 +69,32 @@ class Installer
         return $result;
     }
 
+    /**
+     * @param $tag
+     *
+     * @return true
+     */
     public function getArchive($tag)
     {
-        if (!isset($this->data[$tag])) {
-            return false;
-        }
+        $url = sprintf($this->zipUrl, $tag);
 
         $zipName = 'fetch.zip';
-        $base_dir = str_replace('\\', '/', __DIR__);
-        $temp_dir = str_replace('\\', '/', __DIR__) . '/_temp' . md5(time());
+        $baseDir = str_replace('\\', '/', __DIR__);
+        $tempDir = str_replace('\\', '/', __DIR__) . '/_temp' . md5(time());
 
-        file_put_contents('fetch.zip', $this->curl($this->data[$tag]['zip']));
+        file_put_contents('fetch.zip', $this->curl($url));
 
         $zip = new ZipArchive();
-        $zip->open($base_dir . '/' . $zipName);
-        $zip->extractTo($temp_dir);
+        $zip->open($baseDir . '/' . $zipName);
+        $zip->extractTo($tempDir);
         $zip->close();
 
-        if (is_file($base_dir . '/' . $zipName)) {
-            unlink($base_dir . '/' . $zipName);
+        if (is_file($baseDir . '/' . $zipName)) {
+            unlink($baseDir . '/' . $zipName);
         }
 
         $dir = '';
-        if ($handle = opendir($temp_dir)) {
+        if ($handle = opendir($tempDir)) {
             while ($name = readdir($handle)) {
                 if ($name === '.' || $name === '..') {
                     continue;
@@ -143,33 +106,39 @@ class Installer
             closedir($handle);
         }
 
-        $this->moveFiles($temp_dir . '/' . $dir, $base_dir . '/');
-        $this->removeFiles($temp_dir);
-        //unlink(__FILE__);
+        $this->moveFiles($tempDir . '/' . $dir, $baseDir . '/');
+        $this->removeFiles($tempDir);
+
         header('Location: install/index.php');
+
+        //unlink(__FILE__);
 
         return true;
     }
 
-    protected function moveFiles($src, $dest)
+    /**
+     * @param $dir
+     * @param $baseDir
+     *
+     * @return void
+     */
+    protected function moveFiles($dir, $baseDir)
     {
-        $path = realpath($src);
-        $dest = realpath($dest);
+        $dir = realpath($dir);
+        $baseDir = realpath($baseDir);
 
-        $objects = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($path),
-            RecursiveIteratorIterator::SELF_FIRST
-        );
+        $iterator = new RecursiveDirectoryIterator($dir);
+        $files = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
 
-        foreach ($objects as $name => $object) {
-            $startsAt = substr(dirname($name), strlen($path));
-            $this->mmkDir($dest . $startsAt);
-            if ($object->isDir()) {
-                $this->mmkDir($dest . substr($name, strlen($path)));
+        foreach ($files as $name => $file) {
+            $startsAt = substr(dirname($name), strlen($dir));
+            $this->checkDir($baseDir . $startsAt);
+            if ($file->isDir()) {
+                $this->checkDir($baseDir . substr($name, strlen($dir)));
             }
 
-            if (is_writable($dest . $startsAt) && $object->isFile()) {
-                rename((string) $name, $dest . $startsAt . '/' . basename($name));
+            if (is_writable($baseDir . $startsAt) && $file->isFile()) {
+                rename((string) $name, $baseDir . $startsAt . '/' . basename($name));
             }
         }
     }
@@ -179,7 +148,7 @@ class Installer
      *
      * @return void
      */
-    protected function mmkDir($folder)
+    protected function checkDir($folder)
     {
         if (is_dir($folder)) {
             return;
@@ -252,6 +221,7 @@ class Installer
         }
         * {
             font-family: 'Inter', sans-serif;
+            color: #444;
             box-sizing: border-box;
         }
         .app {
@@ -262,26 +232,50 @@ class Installer
         header {
             display: flex;
             align-items: center;
-            padding: 0 0 1rem;
+            justify-content: center;
+            padding: 0 0 3rem;
+            font-size: calc(3rem + 1vw);
         }
         .header-title {
             padding: 0 0 0 1.5rem;
-            font-size: 2.5rem;
             font-weight: 300;
             text-transform: uppercase;
         }
+        .logo::before {
+            content: "";
+            display: block;
+            position: relative;
+            z-index: 1;
+            width: calc(3rem + 1vw);
+            height: calc(3rem + 1vw);
+            border-radius: 50%;
+            animation: rotate 2s linear infinite;
+            box-shadow: 0.1875rem 0.1875rem 0 0 rgb(234 132 82), 0.5rem -0.25rem 0 0 rgb(111 163 219 / 70%), -0.25rem 0.375rem 0 0 rgb(112 193 92 / 74%), -0.375rem -0.25rem 0 0 rgb(147 205 99 / 78%);
+        }
         footer {
-            padding: 1rem;
+            padding: 2rem;
             text-align: center;
             font-size: .75rem;
-            opacity: .5;
+        }
+        footer a {
+            color: #aaa;
         }
         a {
             color: royalblue;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            margin: 0 0 .5rem;
+            font-size: calc(1rem + 1vw);
+            text-align: center;
+            font-weight: 300;
         }
         select {
             appearance: none;
-            padding: 1rem 2.5rem 1rem 1rem;
+            padding: 1rem 2.5rem 1rem 1.5rem;
             width: 100%;
             display: block;
             background: white url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") right 0.5rem center no-repeat;
@@ -290,7 +284,7 @@ class Installer
             border-top-left-radius: .25rem;
             border-bottom-left-radius: .25rem;
             font-family: 'Inter', sans-serif;
-            font-size: 20px;
+            font-size: 1.25rem;
             font-weight: bold;
             outline: none;
         }
@@ -300,13 +294,13 @@ class Installer
         button {
             flex-grow: 0;
             flex-shrink: 0;
-            padding: 1rem;
+            padding: 1rem 1.5rem;
             background: mediumseagreen;
             color: white;
-            border: none;
+            border: 2px solid transparent;
             border-top-right-radius: .25rem;
             border-bottom-right-radius: .25rem;
-            font-size: 18px;
+            font-size: 1.25rem;
             cursor: pointer;
             outline: none;
             transition: .2s;
@@ -318,36 +312,41 @@ class Installer
             display: flex;
             flex-wrap: nowrap;
             flex-direction: row;
+            height: 4rem;
         }
-        .release-select {
+        .data-select {
             flex-grow: 1;
-        }
-        .release-description {
-            margin: 0 0 1rem;
-        }
-        .logo::before {
-            content: "";
-            display: block;
-            position: relative;
-            z-index: 1;
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            animation: rotate 2s linear infinite;
-            box-shadow: 2px 2px 0 0 rgb(234 132 82), 7px -3px 0 0 rgb(111 163 219 / 70%), -3px 5px 0 0 rgb(112 193 92 / 74%), -5px -3px 0 0 rgb(147 205 99 / 78%);
+            display: flex;
         }
         .loader {
             margin: auto;
-            border: .5rem solid #eee;
+            border: .5rem solid #ddd;
             border-radius: 50%;
             border-top: .5rem solid mediumseagreen;
-            width: 3.62rem;
-            height: 3.62rem;
+            width: 4rem;
+            height: 4rem;
             animation: spinner 2s linear infinite;
+        }
+        .error {
+            margin: 0 0 .25rem;
+            padding: .5rem 1rem;
+            background: crimson;
+            border-radius: .25rem;
+            color: white;
         }
         @keyframes spinner {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 990px) {
+            html {
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 480px) {
+            html {
+                font-size: 12px;
+            }
         }
     </style>
 </head>
@@ -360,17 +359,19 @@ class Installer
     </header>
 
     <main>
-        <h2>Choose Evolution CMS version for install</h2>
+        <h1>Choose Evolution CMS version for install</h1>
         <?php
         if ($errors = $installer->checkServer()) {
             echo $errors;
         } else {
             ?>
             <form>
-                <div class="release-description"></div>
-                <div class="input-group">
-                    <div class="release-select"></div>
-                    <button type="submit">Install &rarr;</button>
+                <div class="loader" style="display: block"></div>
+                <div class="content" style="display: none">
+                    <div class="input-group">
+                        <div class="data-select"></div>
+                        <button type="submit">Install &rarr;</button>
+                    </div>
                 </div>
             </form>
             <?php
@@ -379,54 +380,111 @@ class Installer
     </main>
 
     <footer>
-        By Evolution CMS Community
+        <a href="https://evo-cms.com/" target="_blank">By Evolution CMS Community</a>
     </footer>
 </div>
 
 <script>
-  const releases = <?= json_encode($installer->data) ?>;
-  const form = document.querySelector('form')
-  const button = document.querySelector('form button')
-  const releaseSelect = document.querySelector('.release-select')
-  const releaseDescription = document.querySelector('.release-description')
+  const app = {
+    storageKey: 'EVO.INSTALL.DATA',
+    apiUrl: 'https://api.github.com/repos/evocms-community/evolution/',
 
-  function getInfo (release) {
-    return '' +
-      '<strong>Tag</strong>: ' + release['tag'] + '<br>' +
-      '<strong>Name</strong>: ' + release['name'] + '<br>' +
-      '<strong>Link</strong>: <a href="' + release['url'] + '" target="_blank">' + release['url'] + '</a>'
-  }
+    data: {},
 
-  let select = '',
-    description = ''
+    async init () {
+      this.loader(true)
+      if (!localStorage[this.storageKey]) {
+        this.data.branches = await this.getBranches()
+        this.data.releases = await this.getReleases()
 
-  for (const i in releases) {
-    if (!releaseDescription.innerHTML) {
-      releaseDescription.innerHTML = getInfo(releases[i])
-    }
-
-    select += '<option value="' + releases[i]['tag'] + '">' + releases[i]['name'] + '</option>'
-  }
-
-  releaseSelect.innerHTML = '<select name="tag">' + select + '</select>'
-
-  releaseSelect.addEventListener('change', function (event) {
-    releaseDescription.innerHTML = getInfo(releases[event.target.value])
-  })
-
-  button.addEventListener('click', function (event) {
-    event.preventDefault()
-    releaseSelect.parentElement.innerHTML = '<div class="loader"></div>'
-    fetch('install.php', {
-      method: 'post',
-      body: 'tag=' + releaseSelect.firstElementChild.value,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        localStorage[this.storageKey] = JSON.stringify(this.data)
+      } else {
+        this.data = JSON.parse(localStorage[this.storageKey])
       }
-    }).then(response => {
-      location.href = response.url
-    })
-  })
+
+      let select = '<select name="tag">'
+
+      select += '<optgroup label="Releases">'
+      for (const release of this.data.releases) {
+        select += '<option value="tags/' + release.tag + '">' + release.name + '</option>'
+      }
+      select += '</optgroup>'
+
+      select += '<optgroup label="Branches">'
+      for (const branch of this.data.branches) {
+        select += '<option value="heads/' + branch.tag + '">' + branch.name + '</option>'
+      }
+      select += '</optgroup>'
+
+      select += '</select>'
+
+      document.querySelector('.data-select').innerHTML = select
+
+      this.loader(false)
+
+      document.querySelector('form button').addEventListener('click', function (event) {
+        event.preventDefault()
+        app.loader(true)
+
+        fetch('<?= basename(__FILE__) ?>', {
+          method: 'post',
+          body: 'tag=' + document.querySelector('.data-select select').value,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+          }
+        }).then(response => {
+          localStorage.removeItem(app.storageKey)
+          location.href = response.url
+        })
+      })
+    },
+
+    loader (flag) {
+      if (flag) {
+        document.querySelector('.loader').style.display = 'block'
+        document.querySelector('.content').style.display = 'none'
+      } else {
+        document.querySelector('.loader').style.display = 'none'
+        document.querySelector('.content').style.display = 'block'
+      }
+    },
+
+    async getBranches () {
+      const data = []
+      const branches = await fetch(this.apiUrl + 'branches').then(r => r.json())
+
+      for (const branch of branches) {
+        data.push({
+          tag: branch.name,
+          name: branch.name
+        })
+      }
+
+      return data
+    },
+
+    async getReleases () {
+      const data = []
+      const releases = await fetch(this.apiUrl + 'releases').then(r => r.json())
+
+      for (const release of releases) {
+        data.push({
+          tag: release['tag_name'],
+          name: release.name
+        })
+      }
+
+      this.sort(data)
+
+      return data
+    },
+
+    sort (data) {
+      return data.sort((a, b) => b.tag < a.tag ? -1 : b.tag > a.tag ? 1 : 0)
+    }
+  }
+
+  app.init()
 </script>
 </body>
 </html>
