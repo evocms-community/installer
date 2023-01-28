@@ -33,12 +33,16 @@ class Installer
         $errors = [];
 
         if (!extension_loaded('curl')) {
-            $errors[] = '<div class="error">Cannot download the files - CURL is not enabled on this server.</div>';
+            $errors[] = '<div class="error">Cannot download files - CURL extension is not enabled on this server.</div>';
+        }
+        
+        if (!extension_loaded('zip')) {
+            $errors[] = '<div class="error">Cannot extract archives - ZIP extension is not enabled on this server.</div>';
         }
 
         if (!is_writable(__DIR__)) {
             $errors[] =
-                '<div class="error">Cannot download the files - The directory does not have write permission.</div>';
+                '<div class="error">Cannot download files - The directory does not have write permission.</div>';
         }
 
         return implode($errors);
