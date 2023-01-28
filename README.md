@@ -1,14 +1,13 @@
 ## Script to install Evolution CMS in 1 click
 
-Upload install.php to the root of the server with FTP.
+Upload install.php to your server with FTP, then open https://sitename.ru/install.php in browser.
 
-- Copies and extracts last version EVO then run the setup
-- Downloads direct from the EVO repository to your server.
-- Removes itself before running the EVO setup script.
-- Requires allow_url_fopen to be enabled by your server's PHP configuration.
-
+- Requires CURL extension to be enabled in your server's PHP configuration.
+- Downloads and extracts chosen EVO version, then runs the setup.
 
 ## Скрипт для установки Evolution CMS в 1 Клик
 
-- Копирует и распаковывает выбранную версию EVO после чего запускает Установку
-- Экономит время на заливку файлов через ftp
+Загрузите файл install.php на сервер с помощью FTP, затем откройте этот файл в браузере: https://sitename.ru/install.php
+
+- В конфигурации PHP должно быть включено расширение CURL.
+- Скачивает и распаковывает выбранную версию EVO, после чего запускает установку.
