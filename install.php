@@ -111,7 +111,7 @@ class Installer
 
         header('Location: install/index.php');
 
-        //unlink(__FILE__);
+        unlink(__FILE__);
 
         return true;
     }
