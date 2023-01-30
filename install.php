@@ -141,8 +141,7 @@ class Installer
          * @var SplFileInfo $file
          */
         foreach ($files as $name => $file) {
-            $startsAt = substr(dirname($name), strlen($dir));
-            $path = $baseDir . $startsAt;
+            $path = $baseDir . substr(dirname($name), strlen($dir));
             $this->checkDir($path);
 
             if ($file->isDir()) {
