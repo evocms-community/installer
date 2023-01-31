@@ -85,18 +85,18 @@ class Installer
 
         $tempName = '_temp' . md5(time());
         $zipName = $tempName . '.zip';
-        $baseDir = str_replace('\\', '/', __DIR__);
-        $tempDir = str_replace('\\', '/', __DIR__) . '/' . $tempName;
+        $baseDir = str_replace('\\', DIRECTORY_SEPARATOR, __DIR__);
+        $tempDir = str_replace('\\', DIRECTORY_SEPARATOR, __DIR__) . DIRECTORY_SEPARATOR . $tempName;
 
         file_put_contents($zipName, $this->curl($url));
 
         $zip = new ZipArchive();
-        $zip->open($baseDir . '/' . $zipName);
+        $zip->open($baseDir . DIRECTORY_SEPARATOR . $zipName);
         $zip->extractTo($tempDir);
         $zip->close();
 
-        if (is_file($baseDir . '/' . $zipName)) {
-            unlink($baseDir . '/' . $zipName);
+        if (is_file($baseDir . DIRECTORY_SEPARATOR . $zipName)) {
+            unlink($baseDir . DIRECTORY_SEPARATOR . $zipName);
         }
 
         $dir = '';
@@ -112,7 +112,7 @@ class Installer
             closedir($handle);
         }
 
-        $this->moveFiles($tempDir . '/' . $dir, $baseDir . '/');
+        $this->moveFiles($tempDir . DIRECTORY_SEPARATOR . $dir, $baseDir);
         $this->removeFiles($tempDir);
 
         header('Location: install/index.php');
@@ -136,15 +136,21 @@ class Installer
         $iterator = new RecursiveDirectoryIterator($dir);
         $files = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
 
+        /**
+         * @var string $name
+         * @var SplFileInfo $file
+         */
         foreach ($files as $name => $file) {
-            $startsAt = substr(dirname($name), strlen($dir));
-            $this->checkDir($baseDir . $startsAt);
+            $path = $baseDir . substr(dirname($name), strlen($dir));
+            $this->checkDir($path);
+
             if ($file->isDir()) {
-                $this->checkDir($baseDir . substr($name, strlen($dir)));
+                $checkDir = realpath($baseDir . substr($name, strlen($dir)));
+                $checkDir && $this->checkDir($checkDir);
             }
 
-            if (is_writable($baseDir . $startsAt) && $file->isFile()) {
-                rename((string) $name, $baseDir . $startsAt . '/' . basename($name));
+            if (is_writable($path) && $file->isFile()) {
+                rename($name, $path . '/' . basename($name));
             }
         }
     }
@@ -182,6 +188,7 @@ class Installer
         $iterator = new RecursiveDirectoryIterator($dir);
         $files = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::CHILD_FIRST);
 
+        /** @var SplFileInfo $file */
         foreach ($files as $file) {
             if ($file->getFilename() === '.' || $file->getFilename() === '..') {
                 continue;
