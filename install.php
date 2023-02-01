@@ -266,6 +266,12 @@ class Installer
             animation: rotate 2s linear infinite;
             box-shadow: 0.1875rem 0.1875rem 0 0 rgb(234 132 82), 0.5rem -0.25rem 0 0 rgb(111 163 219 / 70%), -0.25rem 0.375rem 0 0 rgb(112 193 92 / 74%), -0.375rem -0.25rem 0 0 rgb(147 205 99 / 78%);
         }
+        .note {
+            color: #aaa;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 1rem;
+        }
         footer {
             padding: 2rem;
             text-align: center;
@@ -392,6 +398,10 @@ class Installer
         }
         ?>
     </main>
+
+    <div class="note">
+        If you choose one of the <span>Releases</span>, that release will be installed. If you choose one of the <span>Branches</span>, the most recent DEV version in that branch will be installed.
+    </div>
 
     <footer>
         <a href="https://evo-cms.com/" target="_blank">By Evolution CMS Community</a>
