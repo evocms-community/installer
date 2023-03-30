@@ -379,7 +379,7 @@ class Installer
     </header>
 
     <main>
-        <h1>Choose Evolution CMS version for install</h1>
+        <h1>Choose Evolution CMS version to install</h1>
         <?php
         if ($errors = $installer->checkServer()) {
             echo $errors;
