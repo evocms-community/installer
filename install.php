@@ -476,7 +476,7 @@ class Installer
     async getBranches () {
       const data = []
       const branches = await fetch(this.apiUrl + 'branches').then(r => r.json())
-      const ignore = ['3.2.x', '2.0.x']
+      const ignore = []
 
       for (const branch of branches) {
         if (ignore.includes(branch.name)) {
