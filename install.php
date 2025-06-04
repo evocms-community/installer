@@ -73,7 +73,7 @@ if ($isCli) {
     }
 }
 
-if (!$isCli && !empty($_POST['tag']) && $installer->getArchive($_POST['tag'])) {
+if (!$isCli && !empty($_POST['tag']) && !$installer->getArchive($_POST['tag'])) {
     print 'A non-existent tag was selected';
     exit;
 }
@@ -133,11 +133,27 @@ class Installer
             CURLOPT_HTTPHEADER => [
                 'User-Agent: Evolution CE',
             ],
+            CURLOPT_VERBOSE => true,
+            CURLOPT_STDERR => $verbose = fopen('php://temp', 'w+')
         ]);
 
         $result = curl_exec($ch);
+        
+        if ($result === false) {
+            if (php_sapi_name() === 'cli') {
+                echo "Curl error: " . curl_error($ch) . PHP_EOL;
+                rewind($verbose);
+                $verboseLog = stream_get_contents($verbose);
+                echo "Verbose information:\n", htmlspecialchars($verboseLog), "\n";
+            }
+        }
+        
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (php_sapi_name() === 'cli') {
+            echo "HTTP response code: " . $httpCode . PHP_EOL;
+        }
+        
         curl_close($ch);
-
         return $result;
     }
 
@@ -159,7 +175,21 @@ class Installer
             echo "Downloading archive from $url..." . PHP_EOL;
         }
 
-        file_put_contents($zipName, $this->curl($url));
+        $content = $this->curl($url);
+        if ($content === false) {
+            if (php_sapi_name() === 'cli') {
+                echo "Failed to download archive!" . PHP_EOL;
+            }
+            return false;
+        }
+
+        $result = file_put_contents($zipName, $content);
+        if ($result === false) {
+            if (php_sapi_name() === 'cli') {
+                echo "Failed to save archive to disk!" . PHP_EOL;
+            }
+            return false;
+        }
 
         if (php_sapi_name() === 'cli') {
             echo "Extracting files..." . PHP_EOL;
